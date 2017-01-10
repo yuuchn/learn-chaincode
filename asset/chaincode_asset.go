@@ -213,7 +213,7 @@ func (t *AssetChaincode) read(stub shim.ChaincodeStubInterface, args []string) (
 }
 
 // 所有権の履歴の取得
-func (t *AssetChaincode) readHist(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+func (t *AssetChaincode) readHist(stub shim.ChaincodeStubInterface, args []string) (shim.Row, error) {
 	var key, jsonResp string
 	var err error
 	var columns []shim.Column
