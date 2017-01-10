@@ -229,10 +229,5 @@ func (t *AssetChaincode) readHist(stub shim.ChaincodeStubInterface, args []strin
 	columns = append(columns, col1)
 	valAsbytes, err := stub.GetRow(tableColumn, columns)
 
-	if err != nil {
-		jsonResp = "{\"Error\":\"Failed to get table for " + key + "\"}"
-		return nil, errors.New(jsonResp)
-	}
-
 	return valAsbytes, nil
 }
