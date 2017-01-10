@@ -227,12 +227,12 @@ func (t *AssetChaincode) readHist(stub shim.ChaincodeStubInterface, args []strin
 	key = args[0]
 	col1 := shim.Column{Value: &shim.Column_String_{String_: key}}
 	columns = append(columns, col1)
-	valAsbytes, err := stub.GetRow(tableColumn, columns)
+	temp, err := stub.GetRow(tableColumn, columns)
 
 	if err != nil {
 		jsonResp = "{\"Error\":\"Failed to get state for " + key + "\"}"
 		return nil, errors.New(jsonResp)
 	}
 
-	return valAsbytes.Descriptor(), nil
+	return temp.Descriptor(), nil
 }
