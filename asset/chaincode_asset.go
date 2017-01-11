@@ -54,10 +54,7 @@ const WIFI_D string = "wifi_d"
 const (
 	tableNm     = "AssetsOwnership"
 	colAsset    = "Asset"
-	colOwner    = "Owner"
-	colHash     = "Hash"
-	colPreHash  = "PreviousHash"
-	colTimeStmp = "TimeStamp"
+	colOwnerInfo    = "OwnerInfo"
 )
 
 // ============================================================================================================================
@@ -91,11 +88,8 @@ func (t *AssetChaincode) Init(stub shim.ChaincodeStubInterface, function string,
 
 	// テーブル初期化
 	stub.CreateTable(tableNm, []*shim.ColumnDefinition{
-		&shim.ColumnDefinition{Name: colAsset, Type: shim.ColumnDefinition_STRING, Key: true},
-		&shim.ColumnDefinition{Name: colOwner, Type: shim.ColumnDefinition_STRING, Key: false},
-		&shim.ColumnDefinition{Name: colHash, Type: shim.ColumnDefinition_STRING, Key: false},
-		&shim.ColumnDefinition{Name: colPreHash, Type: shim.ColumnDefinition_STRING, Key: false},
-		&shim.ColumnDefinition{Name: colTimeStmp, Type: shim.ColumnDefinition_STRING, Key: true},
+		&shim.ColumnDefinition{Name: colAsset, Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: colOwnerInfo, Type: shim.ColumnDefinition_STRING, Key: false},
 	})
 
 	return nil, nil
@@ -137,19 +131,17 @@ func (t *AssetChaincode) Query(stub shim.ChaincodeStubInterface, function string
 
 // 所有者情報の更新
 func (t *AssetChaincode) write(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	var key, value, hash, preHash string
+	var key, value string
 	var err error
 	fmt.Println("running write()")
 
-	// 引数にKey/Value/Hash/preHasがない場合はエラーを返却
-	if len(args) != 4 {
-		return nil, errors.New("Incorrect number of arguments. Expecting 4. name of the key and value to set")
+	// 引数にKey/Valueがない場合はエラーを返却
+	if len(args) != 2 {
+		return nil, errors.New("Incorrect number of arguments. Expecting 2. name of the key and value to set")
 	}
 
 	key = args[0]   // Key
 	value = args[1] // Value
-	hash = args[2]
-	preHash = args[3]
 	// タイムスタンプ
 	timeStmp := time.Now().Format("2006-01-02-[PM]03:04:05")
 	// Keyチェック
@@ -176,14 +168,11 @@ func (t *AssetChaincode) write(stub shim.ChaincodeStubInterface, args []string) 
 
 	// 所有者情報を更新
 	err = stub.PutState(key, []byte(value))
-	// TODO テーブル更新
+	// テーブル行追加
 	stub.InsertRow(tableNm, shim.Row{
 		Columns: []*shim.Column{
 			&shim.Column{Value: &shim.Column_String_{String_: key}},
-			&shim.Column{Value: &shim.Column_String_{String_: value}},
-			&shim.Column{Value: &shim.Column_String_{String_: hash}},
-			&shim.Column{Value: &shim.Column_String_{String_: preHash}},
-			&shim.Column{Value: &shim.Column_String_{String_: timeStmp}}},
+			&shim.Column{Value: &shim.Column_String_{String_: value + "," + timeStmp}}},
 	})
 	// 更新時にエラーが発生した場合
 	if err != nil {
@@ -214,9 +203,8 @@ func (t *AssetChaincode) read(stub shim.ChaincodeStubInterface, args []string) (
 
 // 所有権の履歴の取得
 func (t *AssetChaincode) readHist(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	var key, jsonResp string
+	var key string
 	var err error
-	var columns []shim.Column
 
 	// 引数チェック
 	if len(args) != 1 {
@@ -224,15 +212,23 @@ func (t *AssetChaincode) readHist(stub shim.ChaincodeStubInterface, args []strin
 	}
 
 	// テーブル取得
-	key = args[0]
-	col1 := shim.Column{Value: &shim.Column_String_{String_: key}}
-	columns = append(columns, col1)
-	temp, err := stub.GetRow(colAsset, columns)
-
+	row, err := t.queryTableRows(stub, key)
 	if err != nil {
-		jsonResp = "{\"Error\":\"Failed to get state for " + key + "\"}"
-		return temp, errors.New(jsonResp)
+		return "", 0, err
+	}
+	if len(row.Columns) == 0 || row.Columns[1] == nil {
+		return "", 0, errors.New("row or column value not found")
 	}
 
-	return temp.Descriptor(), nil
+	return row.Columns[1].GetBytes() , nil
+}
+
+// テーブル検索
+func (t *AssetChaincode) queryTableRows(stub shim.ChaincodeStubInterface, asset string) (shim.Row, error) {
+
+	var columns []shim.Column
+	col1 := shim.Column{Value: &shim.Column_String_{String_: asset}}
+	columns = append(columns, col1)
+
+	return stub.GetRows(tableNm, columns)
 }
