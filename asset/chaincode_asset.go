@@ -214,10 +214,10 @@ func (t *AssetChaincode) readHist(stub shim.ChaincodeStubInterface, args []strin
 	// テーブル取得
 	row, err := t.queryTableRows(stub, key)
 	if err != nil {
-		return "", 0, err
+		return "", err
 	}
 	if len(row.Columns) == 0 || row.Columns[1] == nil {
-		return "", 0, errors.New("row or column value not found")
+		return "", errors.New("row or column value not found")
 	}
 
 	return row.Columns[1].GetBytes() , nil
