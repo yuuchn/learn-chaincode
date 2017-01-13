@@ -160,17 +160,16 @@ func (t *AssetChaincode) write(stub shim.ChaincodeStubInterface, args []string) 
 	strByte = string([]byte(valAsbytes))
 	timeStmp = time.Now().Format("2006/01/02-15:04:05")
 
-	if valAsbytes != nil {
+	if strByte != nil {
 		// 既に登録情報が存在する場合
 		// 追記(既存値, 値 + タイムスタンプ)
 		strByte = strByte + "\n" + value + "," + timeStmp
-		valAsbytes = []byte(strByte)
 	} else {
 		strByte = value + "," + timeStmp
-		valAsbytes = []byte(value)
 	}
 
 	// 所有者情報を更新
+	valAsbytes = []byte(strByte)
 	err = stub.PutState(key, valAsbytes)
 
 	// 更新時にエラーが発生した場合
