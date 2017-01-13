@@ -163,7 +163,7 @@ func (t *AssetChaincode) write(stub shim.ChaincodeStubInterface, args []string) 
 	if valAsbytes != nil {
 		// 既に登録情報が存在する場合
 		// 追記(既存値, 値 + タイムスタンプ)
-		strByte = strByte + "\r\n" + value + "," + timeStmp
+		strByte = strByte + "|" + value + "," + timeStmp
 	} else {
 		strByte = value + "," + timeStmp
 	}
