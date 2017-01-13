@@ -157,7 +157,7 @@ func (t *AssetChaincode) write(stub shim.ChaincodeStubInterface, args []string) 
 	var timeStmp string
 	var strByte string
 
-	strByte = string([]byte{valAsbytes})
+	strByte = string([]byte(valAsbytes))
 	timeStmp = time.Now().Format("2006/01/02-15:04:05")
 
 	if valAsbytes != nil {
