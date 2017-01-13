@@ -152,7 +152,7 @@ func (t *AssetChaincode) write(stub shim.ChaincodeStubInterface, args []string) 
 	}
 
 	// TODO 対象の履歴を取得
-	valAsbytes, err := t.read(stub, args)
+	valAsbytes, err := stub.GetState(key)
 
 	var timeStmp string
 	var strByte string
