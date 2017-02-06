@@ -22,7 +22,6 @@ import (
 	"strings"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-	"time"
 )
 
 // AssetChaincode example simple Chaincode implementation
@@ -66,18 +65,16 @@ func (t *AssetChaincode) Init(stub shim.ChaincodeStubInterface, function string,
 	//	return nil, errors.New("Incorrect number of arguments. Expecting 1")
 	//}
 
-	var timeStmp string
-	timeStmp = time.Now().Format("2006/01/02-15:04:05")
 	// ワールドステート（台帳）に追加
 	// PC
-	stub.PutState(PC_A, []byte("ict" + "," + timeStmp))
-	stub.PutState(PC_B, []byte("ict" + "," + timeStmp))
-	stub.PutState(PC_C, []byte("ict" + "," + timeStmp))
+	stub.PutState(PC_A, []byte("ict"))
+	stub.PutState(PC_B, []byte("ict"))
+	stub.PutState(PC_C, []byte("ict"))
 	// モバイルWifi
-	stub.PutState(WIFI_A, []byte("ict" + "," + timeStmp))
-	stub.PutState(WIFI_B, []byte("ict" + "," + timeStmp))
-	stub.PutState(WIFI_C, []byte("ict" + "," + timeStmp))
-	stub.PutState(WIFI_D, []byte("ict" + "," + timeStmp))
+	stub.PutState(WIFI_A, []byte("ict"))
+	stub.PutState(WIFI_B, []byte("ict"))
+	stub.PutState(WIFI_C, []byte("ict"))
+	stub.PutState(WIFI_D, []byte("ict"))
 
 	return nil, nil
 }
@@ -154,23 +151,38 @@ func (t *AssetChaincode) write(stub shim.ChaincodeStubInterface, args []string) 
 	// TODO 対象の履歴を取得
 	valAsbytes, err := stub.GetState(key)
 
-	var timeStmp string
 	var strByte string
 
 	strByte = string([]byte(valAsbytes))
-	timeStmp = time.Now().Format("2006/01/02-15:04:05")
 
 	if valAsbytes != nil {
-		// 既に登録情報が存在する場合
-		// 追記(既存値, 値 + タイムスタンプ)
-		strByte = strByte + "|" + value + "," + timeStmp
-	} else {
-		strByte = value + "," + timeStmp
+		// 既に登録情報が存在する場合、チェック処理を実行
+		if strByte == "ict" {
+			// 現在：返却中
+			if value == "ict" {
+				// 書込み：返却
+				// エラー返却
+				err = errors.New("Illegal value. Now:Return, Value:Return")
+			} else {
+				// 書込み：使用者
+				// 返却中の場合、使用者を更新
+				valAsbytes = []byte(strByte)
+				err = stub.PutState(key, valAsbytes)
+			}
+		} else {
+			// 現在：使用中
+			if value == "ict" {
+				// 書込み：返却
+				valAsbytes = []byte(strByte)
+				err = stub.PutState(key, valAsbytes)
+			} else {
+				// 書込み：使用者
+				// また貸しをチェック
+				// エラー返却
+				err = errors.New("Illegal value. Now:" + strByte + ", Value:" + value)
+			}
+		}
 	}
-
-	// 所有者情報を更新
-	valAsbytes = []byte(strByte)
-	err = stub.PutState(key, valAsbytes)
 
 	// 更新時にエラーが発生した場合
 	if err != nil {
