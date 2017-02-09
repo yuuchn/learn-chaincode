@@ -151,13 +151,17 @@ func (t *AssetChaincode) write(stub shim.ChaincodeStubInterface, args []string) 
 	// TODO 対象の履歴を取得
 	valAsbytes, err := stub.GetState(key)
 
-	var strByte string
+	var strNow string
+	var strNew string
 
-	strByte = string([]byte(valAsbytes))
+	// 現在の状態
+	strNow = string([]byte(valAsbytes))
+	// 新しい情報
+	strNew = string([]byte(value))
 
 	if valAsbytes != nil {
 		// 既に登録情報が存在する場合、チェック処理を実行
-		if strByte == "ict" {
+		if strNow == "ict" {
 			// 現在：返却中
 			if value == "ict" {
 				// 書込み：返却
@@ -166,20 +170,20 @@ func (t *AssetChaincode) write(stub shim.ChaincodeStubInterface, args []string) 
 			} else {
 				// 書込み：使用者
 				// 返却中の場合、使用者を更新
-				valAsbytes = []byte(strByte)
+				valAsbytes = []byte(strNew)
 				err = stub.PutState(key, valAsbytes)
 			}
 		} else {
 			// 現在：使用中
 			if value == "ict" {
 				// 書込み：返却
-				valAsbytes = []byte(strByte)
+				valAsbytes = []byte(strNew)
 				err = stub.PutState(key, valAsbytes)
 			} else {
 				// 書込み：使用者
 				// また貸しをチェック
 				// エラー返却
-				err = errors.New("Illegal value. Now:" + strByte + ", Value:" + value)
+				err = errors.New("Illegal value. Now:" + strNow + ", Value:" + value)
 			}
 		}
 	}
