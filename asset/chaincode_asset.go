@@ -19,7 +19,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
@@ -126,27 +125,27 @@ func (t *AssetChaincode) write(stub shim.ChaincodeStubInterface, args []string) 
 	key = args[0]   // Key
 	value = args[1] // Value
 
-	// Keyチェック
-	if strings.Contains(key, PC_A) {
-		// 何もしない
-	} else if strings.Contains(key, PC_B) {
-		// 何もしない
-	} else if strings.Contains(key, PC_B) {
-		// 何もしない
-	} else if strings.Contains(key, PC_C) {
-		// 何もしない
-	} else if strings.Contains(key, WIFI_A) {
-		// 何もしない
-	} else if strings.Contains(key, WIFI_B) {
-		// 何もしない
-	} else if strings.Contains(key, WIFI_C) {
-		// 何もしない
-	} else if strings.Contains(key, WIFI_D) {
-		// 何もしない
-	} else {
-		// 定義外のKeyの場合はエラーを返却
-		return nil, errors.New("Incorrect Key of arguments: " + key)
-	}
+	// TODO 今回はKeyチェックは行わない
+	//if strings.Contains(key, PC_A) {
+	//	// 何もしない
+	//} else if strings.Contains(key, PC_B) {
+	//	// 何もしない
+	//} else if strings.Contains(key, PC_B) {
+	//	// 何もしない
+	//} else if strings.Contains(key, PC_C) {
+	//	// 何もしない
+	//} else if strings.Contains(key, WIFI_A) {
+	//	// 何もしない
+	//} else if strings.Contains(key, WIFI_B) {
+	//	// 何もしない
+	//} else if strings.Contains(key, WIFI_C) {
+	//	// 何もしない
+	//} else if strings.Contains(key, WIFI_D) {
+	//	// 何もしない
+	//} else {
+	//	// 定義外のKeyの場合はエラーを返却
+	//	return nil, errors.New("Incorrect Key of arguments: " + key)
+	//}
 
 	// TODO 対象の履歴を取得
 	valAsbytes, err := stub.GetState(key)
