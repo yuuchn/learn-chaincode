@@ -23,8 +23,8 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
-// AssetChaincode example simple Chaincode implementation
-type AssetChaincode struct {
+// AssetChaincodeStress example simple Chaincode implementation
+type AssetChaincodeStress struct {
 }
 
 // ============================================================================================================================
@@ -51,14 +51,14 @@ const WIFI_D string = "wifi_d"
 // ============================================================================================================================
 // Validating Peerに接続し、チェーンコードを実行
 func main() {
-	err := shim.Start(new(AssetChaincode))
-		if err != nil {
+	err := shim.Start(new(AssetChaincodeStress))
+	if err != nil {
 		fmt.Printf("Error starting Asset chaincode: %s", err)
 	}
 }
 
 // 資産の所有者情報を初期値
-func (t *AssetChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+func (t *AssetChaincodeStress) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	// TODO 今回は引数のチェックは行わない。
 	//if len(args) != 1 {
 	//	return nil, errors.New("Incorrect number of arguments. Expecting 1")
@@ -79,7 +79,7 @@ func (t *AssetChaincode) Init(stub shim.ChaincodeStubInterface, function string,
 }
 
 // 資産の所有者情報を更新
-func (t *AssetChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+func (t *AssetChaincodeStress) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	fmt.Println("invoke is running " + function)
 
 	// function名でハンドリング
@@ -97,7 +97,7 @@ func (t *AssetChaincode) Invoke(stub shim.ChaincodeStubInterface, function strin
 }
 
 // 所有者情報を参照
-func (t *AssetChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+func (t *AssetChaincodeStress) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	fmt.Println("query is running " + function)
 
 	// function名でハンドリング
@@ -111,7 +111,7 @@ func (t *AssetChaincode) Query(stub shim.ChaincodeStubInterface, function string
 }
 
 // 所有者情報の更新
-func (t *AssetChaincode) write(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+func (t *AssetChaincodeStress) write(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var key, value string
 	var err error
 
@@ -125,67 +125,7 @@ func (t *AssetChaincode) write(stub shim.ChaincodeStubInterface, args []string) 
 	key = args[0]   // Key
 	value = args[1] // Value
 
-	// TODO 今回はKeyチェックは行わない
-	//if strings.Contains(key, PC_A) {
-	//	// 何もしない
-	//} else if strings.Contains(key, PC_B) {
-	//	// 何もしない
-	//} else if strings.Contains(key, PC_B) {
-	//	// 何もしない
-	//} else if strings.Contains(key, PC_C) {
-	//	// 何もしない
-	//} else if strings.Contains(key, WIFI_A) {
-	//	// 何もしない
-	//} else if strings.Contains(key, WIFI_B) {
-	//	// 何もしない
-	//} else if strings.Contains(key, WIFI_C) {
-	//	// 何もしない
-	//} else if strings.Contains(key, WIFI_D) {
-	//	// 何もしない
-	//} else {
-	//	// 定義外のKeyの場合はエラーを返却
-	//	return nil, errors.New("Incorrect Key of arguments: " + key)
-	//}
-
-	// TODO 対象の履歴を取得
-	valAsbytes, err := stub.GetState(key)
-
-	var strNow string
-	var strNew string
-
-	// 現在の状態
-	strNow = string([]byte(valAsbytes))
-	// 新しい情報
-	strNew = string([]byte(value))
-
-	if valAsbytes != nil {
-		// 既に登録情報が存在する場合、チェック処理を実行
-		if strNow == "ict" {
-			// 現在：返却中
-			if value == "ict" {
-				// 書込み：返却
-				// エラー返却
-				err = errors.New("Illegal value. Now:Return, Value:Return")
-			} else {
-				// 書込み：使用者
-				// 返却中の場合、使用者を更新
-				valAsbytes = []byte(strNew)
-				err = stub.PutState(key, valAsbytes)
-			}
-		} else {
-			// 現在：使用中
-			if value == "ict" {
-				// 書込み：返却
-				valAsbytes = []byte(strNew)
-				err = stub.PutState(key, valAsbytes)
-			} else {
-				// 書込み：使用者
-				// また貸しをチェック
-				// エラー返却
-				err = errors.New("Illegal value. Now:" + strNow + ", Value:" + value)
-			}
-		}
-	}
+	err = stub.PutState(key, []byte(value))
 
 	// 更新時にエラーが発生した場合
 	if err != nil {
@@ -195,7 +135,7 @@ func (t *AssetChaincode) write(stub shim.ChaincodeStubInterface, args []string) 
 }
 
 // 所有者情報の取得
-func (t *AssetChaincode) read(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+func (t *AssetChaincodeStress) read(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var key, jsonResp string
 	var err error
 
